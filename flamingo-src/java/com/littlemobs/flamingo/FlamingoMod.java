@@ -53,10 +53,10 @@ public final class FlamingoMod {
         ENTITIES.register(modBusGroup);
         ITEMS.register(modBusGroup);
 
-        EntityAttributeCreationEvent.getBus(modBusGroup).addListener(FlamingoMod::onAttributes);
-        SpawnPlacementRegisterEvent.getBus(modBusGroup).addListener(FlamingoMod::onSpawnPlacements);
-        EntityRenderersEvent.RegisterLayerDefinitions.getBus(modBusGroup).addListener(FlamingoMod::onLayers);
-        EntityRenderersEvent.RegisterRenderers.getBus(modBusGroup).addListener(FlamingoMod::onRenderers);
+        EntityAttributeCreationEvent.BUS.addListener(FlamingoMod::onAttributes);
+        SpawnPlacementRegisterEvent.BUS.addListener(FlamingoMod::onSpawnPlacements);
+        EntityRenderersEvent.RegisterLayerDefinitions.BUS.addListener(FlamingoMod::onLayers);
+        EntityRenderersEvent.RegisterRenderers.BUS.addListener(FlamingoMod::onRenderers);
         BuildCreativeModeTabContentsEvent.BUS.addListener(FlamingoMod::addCreative);
     }
 
