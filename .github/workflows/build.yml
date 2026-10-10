@@ -49,7 +49,9 @@ jobs:
 
       - name: Build the mod (only runs once Java code exists)
         if: hashFiles('flamingo-src/java/**/*.java') != ''
+        shell: bash
         run: |
+          set -o pipefail
           cd mdk
           rm -rf src/main/java
           cp -r ../flamingo-src/java src/main/java
@@ -58,6 +60,12 @@ jobs:
           sed -i "s/com.example.examplemod/com.littlemobs.flamingo/; s/'examplemod'/'littlemobsflamingo'/g" build.gradle
           chmod +x gradlew
           ./gradlew build --no-daemon --stacktrace 2>&1 | tee ../build-log.txt
+
+      - name: Show build errors as annotations
+        if: failure() && hashFiles('flamingo-src/java/**/*.java') != ''
+        run: |
+          grep -nE "error:|error\b.*\.java|What went wrong|Could not|FAILED|Exception" build-log.txt | head -40 | while IFS= read -r l; do echo "::error::$(echo "$l" | cut -c1-400)"; done
+          tail -30 build-log.txt | while IFS= read -r l; do echo "::warning::$(echo "$l" | cut -c1-400)"; done
 
       - uses: actions/upload-artifact@v4
         if: hashFiles('flamingo-src/java/**/*.java') != ''
