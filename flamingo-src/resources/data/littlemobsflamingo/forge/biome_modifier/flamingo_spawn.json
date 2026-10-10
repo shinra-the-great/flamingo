@@ -5,8 +5,11 @@
     {
       "type": "littlemobsflamingo:flamingo",
       "weight": 8,
-      "minCount": 2,
-      "maxCount": 6
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 2,
+        "max_inclusive": 6
+      }
     }
   ]
 }
