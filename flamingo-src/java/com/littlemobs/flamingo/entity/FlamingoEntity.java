@@ -2,9 +2,6 @@ package com.littlemobs.flamingo.entity;
 
 import com.littlemobs.flamingo.FlamingoMod;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -58,20 +55,5 @@ public class FlamingoEntity extends Animal {
     @Override
     public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob otherParent) {
         return FlamingoMod.FLAMINGO.get().create(level, EntitySpawnReason.BREEDING);
-    }
-
-    @Override
-    protected SoundEvent getAmbientSound() {
-        return SoundEvents.CHICKEN_AMBIENT;
-    }
-
-    @Override
-    protected SoundEvent getHurtSound(DamageSource source) {
-        return SoundEvents.CHICKEN_HURT;
-    }
-
-    @Override
-    protected SoundEvent getDeathSound() {
-        return SoundEvents.CHICKEN_DEATH;
     }
 }

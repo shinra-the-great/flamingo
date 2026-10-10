@@ -64,7 +64,7 @@ jobs:
       - name: Show build errors as annotations
         if: failure() && hashFiles('flamingo-src/java/**/*.java') != ''
         run: |
-          grep -E -A3 "\.java:[0-9]+: error" build-log.txt | grep -v '^--$' | head -80 | while IFS= read -r l; do echo "::error::$(echo "$l" | cut -c1-300)"; done
+          grep -E -A4 "\.java:[0-9]+: error" build-log.txt | grep -v '^--$' | sed 's#.*/com/littlemobs/##' | tr -s ' ' | awk '/: error/{if(m)print m; m=$0; next}{m=m" | "$0}END{if(m)print m}' | head -9 | while IFS= read -r l; do echo "::error::$(echo "$l" | cut -c1-500)"; done
 
       - uses: actions/upload-artifact@v4
         if: hashFiles('flamingo-src/java/**/*.java') != ''
