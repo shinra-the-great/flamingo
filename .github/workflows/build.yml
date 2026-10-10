@@ -66,17 +66,19 @@ jobs:
         run: |
           grep -E -A4 "\.java:[0-9]+: error" build-log.txt | grep -v '^--$' | sed 's#.*/com/littlemobs/##' | tr -s ' ' | awk '/: error/{if(m)print m; m=$0; next}{m=m" | "$0}END{if(m)print m}' | head -9 | while IFS= read -r l; do echo "::error::$(echo "$l" | cut -c1-500)"; done
 
-      - name: Diagnose event classes on failure
-        if: failure() && hashFiles('flamingo-src/java/**/*.java') != ''
+      - name: Inspect spawn data format
+        if: always() && hashFiles('flamingo-src/java/**/*.java') != ''
         run: |
-          for c in net.minecraftforge.event.entity.EntityAttributeCreationEvent net.minecraftforge.event.entity.SpawnPlacementRegisterEvent 'net.minecraftforge.client.event.EntityRenderersEvent$RegisterRenderers'; do
-            for j in $(find ~/.gradle ~/.m2 mdk -name '*.jar' 2>/dev/null); do
-              if unzip -l "$j" 2>/dev/null | grep -q "$(echo "$c" | tr . / | sed 's/\$/\\$/').class"; then
-                echo "::notice::$(javap -cp "$j" "$c" 2>&1 | grep -E 'BUS|getBus|class|interface' | tr '\n' '|' | cut -c1-500)"
-                break
-              fi
-            done
+          CLS='net/minecraft/world/level/biome/MobSpawnSettings$SpawnerData.class'
+          JAR=""
+          for j in $(find ~/.gradle ~/.m2 mdk -name '*.jar' 2>/dev/null); do
+            if unzip -l "$j" 2>/dev/null | grep -qF "$CLS"; then JAR="$j"; break; fi
           done
+          echo "jar: $JAR"
+          [ -n "$JAR" ] || { echo "::notice::SpawnerData jar not found"; exit 0; }
+          OUT=$(javap -p -c -constants -cp "$JAR" 'net.minecraft.world.level.biome.MobSpawnSettings$SpawnerData' 2>&1)
+          echo "$OUT" > spawner-javap.txt
+          echo "::notice::STRINGS: $(echo "$OUT" | grep -E 'String |Field |Method ' | grep -viE 'java/lang/(Object|Record)' | sed -E 's/^ +[0-9]+: //; s/ +/ /g' | head -60 | tr '\n' '|' | cut -c1-3000)"
 
       - uses: actions/upload-artifact@v4
         if: hashFiles('flamingo-src/java/**/*.java') != ''
