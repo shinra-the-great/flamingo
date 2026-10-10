@@ -1,0 +1,72 @@
+name: Build flamingo mod
+
+on:
+  push:
+  workflow_dispatch:
+
+env:
+  FORGE_VERSION: 26.3-66.0.10
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - name: Download the official Forge MDK
+        run: |
+          mkdir mdk
+          cd mdk
+          curl -fL -o mdk.zip "https://maven.minecraftforge.net/net/minecraftforge/forge/${FORGE_VERSION}/forge-${FORGE_VERSION}-mdk.zip"
+          unzip -q mdk.zip
+          find . -type f | sort
+
+      - name: Save Forge example files for inspection
+        if: always()
+        run: |
+          mkdir -p info
+          java -version 2> info/java-version.txt || true
+          if [ -d mdk ]; then
+            (cd mdk && find . -type f | sort) > info/filelist.txt
+            for f in build.gradle gradle.properties settings.gradle gradle/wrapper/gradle-wrapper.properties; do
+              [ -f "mdk/$f" ] && cp "mdk/$f" "info/$(echo $f | tr / _)"
+            done
+            (cd mdk && find src -type f \( -name '*.java' -o -name '*.toml' -o -name '*.json' -o -name '*.mcmeta' \)) | while read f; do
+              cp "mdk/$f" "info/$(echo $f | tr / _)"
+            done
+          fi
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mdk-info
+          path: info
+
+      - name: Build the mod (only runs once Java code exists)
+        if: hashFiles('flamingo-src/java/**/*.java') != ''
+        run: |
+          cd mdk
+          rm -rf src/main/java
+          cp -r ../flamingo-src/java src/main/java
+          cp -r ../flamingo-src/resources/. src/main/resources/
+          sed -i "s/rootProject.name = .*/rootProject.name = 'littlemobsflamingo'/" settings.gradle
+          sed -i "s/com.example.examplemod/com.littlemobs.flamingo/; s/'examplemod'/'littlemobsflamingo'/g" build.gradle
+          chmod +x gradlew
+          ./gradlew build --no-daemon --stacktrace 2>&1 | tee ../build-log.txt
+
+      - uses: actions/upload-artifact@v4
+        if: hashFiles('flamingo-src/java/**/*.java') != ''
+        with:
+          name: flamingo-mod-jar
+          path: mdk/build/libs/*.jar
+
+      - uses: actions/upload-artifact@v4
+        if: failure() && hashFiles('flamingo-src/java/**/*.java') != ''
+        with:
+          name: build-log
+          path: build-log.txt
