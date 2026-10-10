@@ -64,8 +64,7 @@ jobs:
       - name: Show build errors as annotations
         if: failure() && hashFiles('flamingo-src/java/**/*.java') != ''
         run: |
-          grep -nE "error:|error\b.*\.java|What went wrong|Could not|FAILED|Exception" build-log.txt | head -40 | while IFS= read -r l; do echo "::error::$(echo "$l" | cut -c1-400)"; done
-          tail -30 build-log.txt | while IFS= read -r l; do echo "::warning::$(echo "$l" | cut -c1-400)"; done
+          grep -E -A3 "\.java:[0-9]+: error" build-log.txt | grep -v '^--$' | head -80 | while IFS= read -r l; do echo "::error::$(echo "$l" | cut -c1-300)"; done
 
       - uses: actions/upload-artifact@v4
         if: hashFiles('flamingo-src/java/**/*.java') != ''
