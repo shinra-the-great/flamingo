@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "littlemobsflamingo:item/flamingo_spawn_egg_icon"
+  }
+}

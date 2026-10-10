@@ -1,16 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "minecraft:item/template_spawn_egg",
-    "tints": [
-      {
-        "type": "minecraft:constant",
-        "value": 16738740
-      },
-      {
-        "type": "minecraft:constant",
-        "value": 16758465
-      }
-    ]
+    "model": "littlemobsflamingo:item/flamingo_spawn_egg"
   }
 }
